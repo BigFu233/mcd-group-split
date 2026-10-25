@@ -78,12 +78,21 @@ def do_sync(body: dict) -> dict:
         cands = sync.find_store(city, keyword)
         if not cands:
             raise ValueError("没搜到门店，换个关键词试试")
-        store_code, store_name = cands[0]["storeCode"], cands[0].get("storeName", "")
-        if channel == "delivery" and not be_code:
+        # 名称命中关键词的优先，其次按距离由近到远
+        cands.sort(key=lambda c: (0 if keyword in (c.get("storeName") or "") else 1,
+                                  c.get("distance") or 9e9))
+        if channel == "delivery":
             address = sync.pick_address()
-            be_code = sync.store_be_code(address, 2).get(store_code, "")
-            if not be_code:
-                raise ValueError("这家店不在配送范围内，请换一家或改成到店自取")
+            mapping = sync.store_be_code(address, 2)
+            hit = next(((c, mapping[c["storeCode"]]) for c in cands if mapping.get(c["storeCode"])), None)
+            if not hit:
+                names = "、".join(c["storeName"] for c in cands[:4])
+                raise ValueError(f"搜到的门店（{names}）都不在你填的地址配送范围内，换个关键词或改到店自取")
+            store, be_code = hit[0], hit[1]
+            store_code, store_name = store["storeCode"], store.get("storeName", "")
+        else:
+            store_code = cands[0]["storeCode"]
+            store_name = cands[0].get("storeName", "")
     if not be_code:
         be_code = f"{store_code}02"
 
@@ -93,13 +102,18 @@ def do_sync(body: dict) -> dict:
     coupons["storeCoupons"] = sync.store_coupons(store_code, be_code, channel)
 
     store = {"storeCode": store_code, "beCode": be_code, "storeName": store_name,
-             "addressId": address, "channel": channel,
+             "addressId": "", "channel": channel,
              "syncedAt": now.get("formatted", "")}
-    os.makedirs(DATA, exist_ok=True)
-    for name, payload in (("store", store), ("menu", menu), ("coupons", coupons)):
-        with open(os.path.join(DATA, f"{name}.json"), "w", encoding="utf-8") as f:
-            json.dump(payload, f, ensure_ascii=False, indent=2)
-    return snapshot()
+
+    # 默认无状态：数据只回给发起请求的那台手机，服务端不落盘。
+    # 这样多人共用同一个公网链接时，谁也不会看到别人的券码。
+    if os.environ.get("MCD_PERSIST") == "1":
+        os.makedirs(DATA, exist_ok=True)
+        for name, payload in (("store", store), ("menu", menu), ("coupons", coupons)):
+            with open(os.path.join(DATA, f"{name}.json"), "w", encoding="utf-8") as f:
+                json.dump(payload, f, ensure_ascii=False, indent=2)
+
+    return {"store": store, "menu": menu, "coupons": coupons, "hasLiveCoupons": True}
 
 
 def do_verify(body: dict) -> dict:

@@ -316,7 +316,7 @@
 <script>
 const $ = s => document.querySelector(s);
 const fmt = v => '¥' + Number(v).toFixed(2);
-const LS = { token:'mcdsplit.token', shop:'mcdsplit.shop', order:'mcdsplit.order' };
+const LS = { token:'mcdsplit.token', shop:'mcdsplit.shop', order:'mcdsplit.order', data:'mcdsplit.data' };
 
 const state = {
   store:null, menu:[], wallet:[], claimable:[],
@@ -342,13 +342,21 @@ async function boot(){
   const d = new Date(), pad = n => String(n).padStart(2,'0');
   $('#now').value = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 
-  const snap = await (await fetch('/api/snapshot')).json();
+  // 数据优先用本机缓存（这台手机自己同步过的真实菜单/券包），没有才用内置示例
+  let snap = null, saved = null;
+  try { saved = JSON.parse(localStorage.getItem(LS.data) || 'null'); } catch (e) { saved = null; }
+  if (saved && saved.menu && saved.menu.items && saved.menu.items.length){ snap = saved; state.local = true; }
+  else snap = await (await fetch('/api/snapshot')).json();
   state.store = snap.store || null;
   state.menu = (snap.menu && snap.menu.items) || [];
   state.wallet = (snap.coupons && snap.coupons.wallet) || [];
   state.claimable = (snap.coupons && snap.coupons.claimable) || [];
   if (state.store && state.store.channel) $('#channel').value = state.store.channel;
   paintConn();
+  // 超过 6 小时的数据提醒一下（菜单会换时段、券也可能过期）
+  if (saved && saved.savedAt && Date.now() - saved.savedAt > 6 * 3600e3){
+    setTimeout(() => toast('菜单是 6 小时前同步的，点右上角可以重拉一次'), 1200);
+  }
 
   const draft = localStorage.getItem(LS.order);
   if (draft){
@@ -376,7 +384,8 @@ function paintConn(){
   if (hasStore){
     const raw = state.store.storeName || ('门店 ' + state.store.storeCode);
     label = raw.replace(/^麦当劳/, '').replace(/餐厅$/, '');
-    if (label.length > 12) label = label.slice(0, 12) + '…';
+    if (label.length > 10) label = label.slice(0, 10) + '…';
+    label += state.local ? ' · 本机' : ' · 示例';
   }
   $('#connText').textContent = label;
 }
@@ -620,6 +629,9 @@ $('#btnDoSync').onclick = async () => {
     state.store = d.store; state.menu = d.menu.items || [];
     state.wallet = d.coupons.wallet || []; state.claimable = d.coupons.claimable || [];
     state.disabled.clear();
+    // 只存这台手机本地：服务器不落盘，别人打不开链接也看不到你的券
+    localStorage.setItem(LS.data, JSON.stringify({ ...d, savedAt: Date.now() }));
+    state.local = true;
     localStorage.setItem(LS.shop, JSON.stringify({ city, keyword, channel }));
     $('#channel').value = channel;
     renderChips(); renderMenu(); renderCoupons(); paintConn(); settle();
