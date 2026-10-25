@@ -31,6 +31,14 @@ DATA = os.path.join(ROOT, "data")
 WEB = os.path.join(ROOT, "web")
 FALLBACK_COUPONS = os.path.join(ROOT, "examples", "coupons.example.json")
 
+# 允许直接访问的静态资源（白名单，避免任意文件读取）
+STATIC = {
+    "/manifest.json": "application/manifest+json; charset=utf-8",
+    "/icon-192.png": "image/png",
+    "/icon-512.png": "image/png",
+    "/apple-touch-icon.png": "image/png",
+}
+
 
 # ---------------------------------------------------------------- 数据
 def load_json(path: str, default):
@@ -94,6 +102,21 @@ def do_sync(body: dict) -> dict:
     return snapshot()
 
 
+def do_verify(body: dict) -> dict:
+    """只校验 Token 是否有效，顺手返回券包数量，用于首次引导。"""
+    token = (body.get("token") or "").strip()
+    if not token:
+        raise ValueError("请先粘贴 Token")
+    os.environ["MCD_MCP_TOKEN"] = token
+    mcd.initialize()
+    now = mcd.call_with_retry("now-time-info", {}).get("data", {})
+    coupons = mcd.call_with_retry("query-my-coupons", {}).get("data", {}) or {}
+    wallet = coupons.get("coupons") or []
+    return {"ok": True, "serverTime": now.get("formatted", ""),
+            "couponCount": len(wallet),
+            "titles": [c.get("title") for c in wallet][:8]}
+
+
 def do_settle(order: dict) -> dict:
     import datetime as dt
     order.setdefault("title", "麦当劳拼单结算单")
@@ -150,6 +173,9 @@ class Handler(BaseHTTPRequestHandler):
         if path in ("/", "/index.html"):
             with open(os.path.join(WEB, "index.html"), "rb") as f:
                 return self._send(200, f.read(), "text/html; charset=utf-8")
+        if path in STATIC:
+            with open(os.path.join(WEB, path.lstrip("/")), "rb") as f:
+                return self._send(200, f.read(), STATIC[path])
         if path == "/api/snapshot":
             return self._json(200, snapshot())
         if path == "/api/health":
@@ -167,6 +193,8 @@ class Handler(BaseHTTPRequestHandler):
             body = json.loads(self.rfile.read(length) or b"{}")
             if path == "/api/sync":
                 return self._json(200, {"ok": True, "data": do_sync(body)})
+            if path == "/api/verify":
+                return self._json(200, do_verify(body))
             if path == "/api/settle":
                 return self._json(200, do_settle(body.get("order") or {}))
             return self._json(404, {"ok": False, "error": "not found"})
@@ -180,9 +208,12 @@ class Handler(BaseHTTPRequestHandler):
 
 
 def main() -> None:
-    port = int(sys.argv[1]) if len(sys.argv) > 1 else 8765
-    srv = ThreadingHTTPServer(("127.0.0.1", port), Handler)
+    port = int(sys.argv[1]) if len(sys.argv) > 1 else int(os.environ.get("PORT", "8765"))
+    host = os.environ.get("HOST", "0.0.0.0")
+    srv = ThreadingHTTPServer((host, port), Handler)
     print(f"🍟 麦麦拼单官 · 图形版已启动： http://127.0.0.1:{port}")
+    if host == "0.0.0.0":
+        print("   手机同一 Wi-Fi 下可用「电脑内网 IP:端口」访问")
     print("   按 Ctrl+C 停止")
     try:
         srv.serve_forever()
