@@ -192,7 +192,7 @@ python3 web/server.py          # 电脑打开 http://127.0.0.1:8765
 ### 第二步：跑起来（不需要装任何依赖）
 
 ```bash
-git clone https://github.com/<your-name>/mcd-group-split.git
+git clone https://github.com/BigFu233/mcd-group-split.git
 cd mcd-group-split
 
 export MCD_MCP_TOKEN='你的Token'          # 只走环境变量，绝不落盘
