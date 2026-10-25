@@ -1,0 +1,204 @@
+{
+  "wallet": [
+    {
+      "id": "DEMO_COUPON_1",
+      "code": "DEMO_CODE_1",
+      "title": "11.9元麦辣鸡腿堡",
+      "kind": "price",
+      "value": 11.9,
+      "discountDesc": "用券价格",
+      "channels": [
+        1,
+        2
+      ],
+      "beTypes": [
+        1,
+        2,
+        5
+      ],
+      "tags": [
+        "到店专用",
+        "外送专用"
+      ],
+      "weekdays": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "timePeriods": [
+        [
+          "10:30",
+          "23:59"
+        ]
+      ],
+      "dateRange": [
+        "2026-10-26",
+        "2026-10-30"
+      ],
+      "leftCount": 1,
+      "orderLimit": 1,
+      "datetimeText": "2026-10-26 10:30-2026-10-30 23:59 周一、二、三、四、五 10:30-23:59",
+      "note": "未到使用时间"
+    },
+    {
+      "id": "DEMO_COUPON_2",
+      "code": "DEMO_CODE_2",
+      "title": "19.9元王牌炸鸡任选2",
+      "kind": "price",
+      "value": 19.9,
+      "discountDesc": "用券价格",
+      "channels": [
+        1,
+        2
+      ],
+      "beTypes": [
+        1,
+        2,
+        5
+      ],
+      "tags": [
+        "到店专用",
+        "外送专用"
+      ],
+      "weekdays": [
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "timePeriods": [
+        [
+          "10:30",
+          "23:59"
+        ]
+      ],
+      "dateRange": [
+        "2026-10-26",
+        "2026-10-30"
+      ],
+      "leftCount": 1,
+      "orderLimit": 1,
+      "datetimeText": "2026-10-26 10:30-2026-10-30 23:59 周一、二、三、四、五 10:30-23:59",
+      "note": "未到使用时间"
+    },
+    {
+      "id": "DEMO_COUPON_3",
+      "code": "DEMO_CODE_3",
+      "title": "0元小食8选1",
+      "kind": "price",
+      "value": 0.0,
+      "discountDesc": "用券价格",
+      "channels": [
+        2
+      ],
+      "beTypes": [
+        2
+      ],
+      "tags": [
+        "外送专用"
+      ],
+      "weekdays": [],
+      "timePeriods": [
+        [
+          "10:30",
+          "23:59"
+        ]
+      ],
+      "dateRange": [
+        "2026-09-30",
+        "2026-10-29"
+      ],
+      "leftCount": 1,
+      "orderLimit": 1,
+      "datetimeText": "2026-09-30 00:00-2026-10-29 23:59 10:30-23:59",
+      "note": "未到使用时间;外送"
+    },
+    {
+      "id": "DEMO_COUPON_4",
+      "code": "DEMO_CODE_4",
+      "title": "1024“码”力翻倍",
+      "kind": "price",
+      "value": 20.48,
+      "discountDesc": "用券价格",
+      "channels": [
+        1
+      ],
+      "beTypes": [
+        1,
+        5
+      ],
+      "tags": [
+        "到店专用"
+      ],
+      "weekdays": [],
+      "timePeriods": [
+        [
+          "10:30",
+          "23:59"
+        ]
+      ],
+      "dateRange": [
+        "2026-10-24",
+        "2026-10-30"
+      ],
+      "leftCount": 1,
+      "orderLimit": 1,
+      "datetimeText": "2026-10-24 00:00-2026-10-30 23:59 10:30-23:59",
+      "note": "未到使用时间;到店"
+    },
+    {
+      "id": "DEMO_COUPON_5",
+      "code": "DEMO_CODE_5",
+      "title": "1024“码”力翻倍",
+      "kind": "price",
+      "value": 20.48,
+      "discountDesc": "用券价格",
+      "channels": [
+        1
+      ],
+      "beTypes": [
+        1,
+        5
+      ],
+      "tags": [
+        "到店专用"
+      ],
+      "weekdays": [],
+      "timePeriods": [
+        [
+          "10:30",
+          "23:59"
+        ]
+      ],
+      "dateRange": [
+        "2026-10-25",
+        "2026-10-31"
+      ],
+      "leftCount": 1,
+      "orderLimit": 1,
+      "datetimeText": "2026-10-25 00:00-2026-10-31 23:59 10:30-23:59",
+      "note": "未到使用时间;到店"
+    }
+  ],
+  "claimable": [
+    {
+      "name": "免费脆薯饼",
+      "status": "CAN_GET",
+      "label": "可领取"
+    },
+    {
+      "name": "11.9元麦辣鸡腿堡",
+      "status": "HAVING_RECEIVE",
+      "label": "已领取"
+    },
+    {
+      "name": "19.9元王牌炸鸡任选2",
+      "status": "HAVING_RECEIVE",
+      "label": "已领取"
+    }
+  ],
+  "storeCoupons": []
+}

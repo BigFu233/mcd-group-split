@@ -1,0 +1,13 @@
+# 运行时产物
+out/
+*.pyc
+__pycache__/
+.DS_Store
+
+# 含个人凭证的同步结果，不入库
+data/coupons.json
+data/store.json
+
+# 本地环境
+.env
+.env.local

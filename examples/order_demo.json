@@ -1,0 +1,83 @@
+{
+  "title": "周日早午餐拼单 · 乔司商城得来速店",
+  "storeName": "麦当劳杭州临平乔司商城得来速餐厅（3330478）",
+  "channel": "delivery",
+  "mode": "proportional",
+  "initiator": "大富",
+  "now": "2026-10-25 10:40",
+  "couponsFile": "examples/coupons.example.json",
+  "members": [
+    {
+      "nick": "大富",
+      "budget": 45,
+      "items": [
+        {
+          "code": "9900013812",
+          "name": "麦满分单人餐",
+          "price": 19.9,
+          "qty": 1,
+          "category": "人气热卖",
+          "custom": "咖啡不加糖"
+        },
+        {
+          "code": "904825",
+          "name": "脆薯饼",
+          "price": 9.5,
+          "qty": 1,
+          "category": "小食甜品/其他",
+          "custom": ""
+        }
+      ]
+    },
+    {
+      "nick": "阿伟",
+      "budget": 30,
+      "items": [
+        {
+          "code": "9900012857",
+          "name": "板烧鸡腿麦满分单人餐",
+          "price": 21.9,
+          "qty": 1,
+          "category": "人气热卖",
+          "custom": "不要酸黄瓜、去酱"
+        }
+      ]
+    },
+    {
+      "nick": "小鹿",
+      "budget": 35,
+      "items": [
+        {
+          "code": "9900014750",
+          "name": "枫糖风味厚松饼猪柳堡套餐",
+          "price": 29.9,
+          "qty": 1,
+          "category": "厚松饼堡系列",
+          "custom": "饮料少冰"
+        }
+      ]
+    },
+    {
+      "nick": "老王",
+      "budget": 25,
+      "items": [
+        {
+          "code": "905024",
+          "name": "猪柳麦满分",
+          "price": 14.5,
+          "qty": 1,
+          "category": "麦满分",
+          "custom": ""
+        },
+        {
+          "code": "520688",
+          "name": "大杯鲜萃咖啡",
+          "price": 13.0,
+          "qty": 1,
+          "category": "饮品",
+          "custom": "不加糖"
+        }
+      ]
+    }
+  ]
+}
