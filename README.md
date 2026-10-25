@@ -28,6 +28,14 @@ iPhone 用 Safari 打开后「分享 → 添加到主屏幕」，它就是个 Ap
 
 > 数据不出你的手机：菜单和券包同步后只存在本机浏览器里，服务端只做转发，不落盘、不共享。
 
+<details>
+<summary>📮 想转发给拼单群？这里有一张现成的竖版海报（点开看）</summary>
+
+<br>
+<img src="docs/poster.png" alt="分享海报" width="460">
+
+</details>
+
 ---
 
 ## 😩 为什么需要它
