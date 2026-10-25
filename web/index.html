@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>麦麦拼单官 · 图形版</title>
+<style>
+  :root{
+    --yellow:#FFC72C; --yellow-d:#FFB400; --red:#DA291C; --green:#1B9C4B;
+    --ink:#1D1D1F; --muted:#86868B; --line:#EBEBEF; --bg:#F5F5F7; --card:#fff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font:14px/1.5 -apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;
+       -webkit-font-smoothing:antialiased}
+  button{font:inherit;cursor:pointer;border:none;background:none;color:inherit}
+  input,select{font:inherit;color:inherit;background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px 10px;outline:none;width:100%}
+  input:focus,select:focus{border-color:var(--yellow-d);box-shadow:0 0 0 3px rgba(255,199,44,.18)}
+
+  /* 顶栏 */
+  header{background:linear-gradient(135deg,var(--yellow),var(--yellow-d));padding:14px 20px;
+         display:flex;align-items:center;gap:14px;flex-wrap:wrap;position:sticky;top:0;z-index:20;
+         box-shadow:0 2px 12px rgba(0,0,0,.06)}
+  .brand{font-size:18px;font-weight:800;letter-spacing:.3px;white-space:nowrap}
+  .brand small{font-weight:500;opacity:.62;font-size:12px;margin-left:6px}
+  .store{font-size:12px;background:rgba(255,255,255,.6);padding:5px 10px;border-radius:99px;max-width:340px;
+         overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .top-actions{margin-left:auto;display:flex;gap:8px;align-items:center}
+  .btn{background:#fff;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;white-space:nowrap;
+       box-shadow:0 1px 3px rgba(0,0,0,.08);transition:.15s}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.12)}
+  .btn.red{background:var(--red);color:#fff}
+  .btn.ghost{background:rgba(255,255,255,.55)}
+
+  /* 布局 */
+  main{display:grid;grid-template-columns:minmax(240px,1fr) minmax(340px,1.15fr) minmax(300px,.95fr);
+       gap:14px;padding:14px;align-items:start;max-width:1500px;margin:0 auto}
+  .col{display:flex;flex-direction:column;gap:14px;min-width:0}
+  .panel{background:var(--card);border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.05);overflow:hidden}
+  .panel-hd{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid var(--line);
+            font-weight:700;font-size:14px}
+  .panel-hd .hint{margin-left:auto;font-weight:500;color:var(--muted);font-size:12px}
+  .panel-bd{padding:14px 16px}
+  .scroll{max-height:min(58vh,560px);overflow:auto}
+  .scroll::-webkit-scrollbar{width:6px}
+  .scroll::-webkit-scrollbar-thumb{background:#DDD;border-radius:3px}
+
+  /* 菜单 */
+  .search-row{display:flex;gap:8px;margin-bottom:10px}
+  .chips{display:flex;gap:6px;overflow:auto;padding-bottom:8px;margin-bottom:4px}
+  .chip{white-space:nowrap;font-size:12px;background:#F2F2F5;border-radius:99px;padding:5px 11px;color:#555}
+  .chip.on{background:var(--ink);color:#fff}
+  .item{display:flex;align-items:center;gap:10px;padding:9px 8px;border-radius:10px;cursor:pointer}
+  .item:hover{background:#FFF9E8}
+  .item .nm{flex:1;min-width:0}
+  .item .nm b{display:block;font-weight:600;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .item .nm span{font-size:11px;color:var(--muted)}
+  .item .pr{font-weight:700;font-size:13px;white-space:nowrap}
+  .item .pr s{display:block;font-weight:400;color:#B8B8BD;font-size:11px;text-align:right}
+  .item .add{width:24px;height:24px;border-radius:50%;background:var(--yellow);font-weight:800;
+             display:grid;place-items:center;font-size:15px;color:#4A3800;flex:none}
+
+  /* 成员 */
+  .member{border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px;transition:.15s}
+  .member.active{border-color:var(--yellow-d);box-shadow:0 0 0 3px rgba(255,199,44,.16)}
+  .m-hd{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+  .m-hd input.nick{width:96px;font-weight:700;border:none;background:#F7F7FA;padding:6px 9px;border-radius:8px}
+  .m-hd .bud{width:104px;position:relative}
+  .m-hd .bud::before{content:"预算 ¥";position:absolute;left:9px;top:8px;font-size:11px;color:var(--muted);pointer-events:none}
+  .m-hd .bud input{padding-left:52px;font-size:12px;border:none;background:#F7F7FA;border-radius:8px}
+  .m-hd .del{margin-left:auto;color:#C7C7CC;font-size:16px;padding:2px 6px}
+  .m-hd .del:hover{color:var(--red)}
+  .line{display:grid;grid-template-columns:1fr auto auto 16px;gap:8px;align-items:center;padding:6px 0;border-bottom:1px dashed #F2F2F5}
+  .line:last-of-type{border-bottom:none}
+  .line .nm{font-size:13px;min-width:0}
+  .line .nm small{display:block;color:var(--muted);font-size:11px}
+  .line .qty{display:flex;align-items:center;gap:4px}
+  .line .qty button{width:20px;height:20px;border-radius:6px;background:#F2F2F5;font-size:12px;font-weight:700;color:#555}
+  .line .qty span{min-width:14px;text-align:center;font-size:12px;font-weight:600}
+  .line .amt{font-weight:700;font-size:13px;min-width:52px;text-align:right}
+  .line .rm{width:17px;height:17px;border-radius:5px;background:#F4F4F7;color:#ADADB4;font-size:9px;
+            display:grid;place-items:center;flex:none}
+  .line .rm:hover{background:#FFE9E7;color:var(--red)}
+  .line .cust{grid-column:1/-1}
+  .line .cust input{font-size:12px;padding:5px 8px;border-radius:8px;background:#FAFAFC;border-color:#F2F2F5}
+  .m-ft{display:flex;align-items:center;gap:8px;margin-top:8px;font-size:12px;color:var(--muted)}
+  .m-ft b{color:var(--ink);font-size:13px}
+  .empty{color:#B8B8BD;font-size:12.5px;text-align:center;padding:18px 0;line-height:1.8}
+  .add-member{width:100%;border:1.5px dashed #E2E2E8;border-radius:12px;padding:11px;color:#8E8E93;
+              font-size:13px;font-weight:600;background:#FCFCFD}
+  .add-member:hover{border-color:var(--yellow-d);color:#7A5E00;background:#FFFDF5}
+
+  /* 结算 */
+  .big{background:linear-gradient(135deg,#FFF8E1,#FFF1C9);padding:16px;border-radius:14px;margin-bottom:12px}
+  .big .row1{display:flex;align-items:baseline;gap:8px}
+  .big .pay{font-size:30px;font-weight:800;color:var(--red);letter-spacing:-1px}
+  .big .old{color:#A08C4E;text-decoration:line-through;font-size:13px}
+  .big .save{margin-left:auto;background:var(--red);color:#fff;font-size:11.5px;padding:4px 10px;border-radius:99px}
+  .big .sub{margin-top:6px;font-size:12px;color:#8A7A45}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:8px 0;text-align:left;font-size:13px}
+  th{font-size:11.5px;color:var(--muted);font-weight:500;border-bottom:1px solid var(--line)}
+  td{border-bottom:1px solid #F7F7F9}
+  tr:last-child td{border-bottom:none}
+  .r{text-align:right}
+  .g{color:var(--green)}
+  .pay-cell{font-weight:700}
+  .warn{color:var(--red);font-size:11px;margin-left:4px}
+  .cp{display:flex;gap:8px;align-items:flex-start;padding:8px 0;border-bottom:1px solid #F7F7F9;font-size:12.5px}
+  .cp:last-child{border-bottom:none}
+  .cp .t{flex:1;min-width:0}
+  .cp .t b{display:block;font-weight:600}
+  .cp .t span{color:var(--muted);font-size:11px}
+  .cp .ok{color:var(--green);font-weight:700;white-space:nowrap}
+  .cp .no{color:#C7C7CC;text-decoration:line-through;white-space:nowrap}
+  .switch{position:relative;width:34px;height:20px;border-radius:99px;background:#E5E5EA;flex:none;transition:.2s}
+  .switch.on{background:var(--green)}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+  .switch.on::after{left:16px}
+  .tips{font-size:12px;color:#6B6B70;line-height:1.75}
+  .tips li{margin-left:14px;margin-bottom:4px}
+  .btns{display:flex;gap:8px;margin-top:12px}
+  .btns .btn{flex:1;text-align:center;background:#F2F2F5;box-shadow:none;font-size:12.5px;padding:10px}
+  .btns .btn.primary{background:var(--ink);color:#fff}
+  .btns .btn:active{transform:scale(.98)}
+
+  /* 同步弹层 */
+  .mask{position:fixed;inset:0;background:rgba(0,0,0,.35);display:none;place-items:center;z-index:50;padding:20px}
+  .mask.on{display:grid}
+  .modal{background:#fff;border-radius:18px;width:min(440px,100%);padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.25)}
+  .modal h3{font-size:16px;margin-bottom:4px}
+  .modal p.tip{font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.6}
+  .fld{margin-bottom:11px}
+  .fld label{display:block;font-size:12px;color:#6B6B70;margin-bottom:5px}
+  .modal .row{display:flex;gap:10px}
+  .modal .row .fld{flex:1}
+  .modal .act{display:flex;gap:8px;margin-top:16px}
+  .modal .act .btn{flex:1;text-align:center;background:#F2F2F5;box-shadow:none;padding:11px}
+  .modal .act .btn.primary{background:var(--red);color:#fff}
+  .msg{font-size:12px;margin-top:10px;color:var(--red);min-height:16px}
+  .toast{position:fixed;left:50%;bottom:32px;transform:translate(-50%,20px);background:rgba(29,29,31,.92);
+         color:#fff;padding:11px 18px;border-radius:12px;font-size:13px;opacity:0;transition:.25s;z-index:99;pointer-events:none}
+  .toast.on{opacity:1;transform:translate(-50%,0)}
+
+  /* 移动端 */
+  .tabs{display:none}
+  @media(max-width:900px){
+    html,body{overflow-x:hidden;width:100%}
+    main{grid-template-columns:1fr;padding:10px;gap:10px;width:100%}
+    header{padding:12px 14px;gap:8px}
+    .store{max-width:100%;flex:1 1 100%}
+    .top-actions{width:100%;margin-left:0;justify-content:space-between;flex-wrap:wrap}
+    .top-actions .btn,.top-actions select{flex:1;text-align:center;min-width:0}
+    .tabs{display:flex;gap:6px;padding:10px 10px 0;position:static;background:var(--bg);z-index:15}
+    .tabs button{flex:1;padding:9px;border-radius:10px;background:#fff;font-size:13px;font-weight:600;color:#8E8E93}
+    .tabs button.on{background:var(--ink);color:#fff}
+    .col{display:none;min-width:0}
+    .col.on{display:flex}
+    .scroll{max-height:none}
+    .item .pr{font-size:12.5px}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">🍟 麦麦拼单官<small>图形版</small></div>
+  <div class="store" id="storeTag">未同步门店</div>
+  <div class="top-actions">
+    <select id="channel" class="btn" style="padding:8px 10px;box-shadow:none;border:1px solid #E9D48A">
+      <option value="delivery">麦乐送</option>
+      <option value="dine_in">到店自取</option>
+    </select>
+    <button class="btn ghost" id="btnDemo">🎬 载入示例</button>
+    <button class="btn ghost" id="btnSync">🔄 同步门店</button>
+  </div>
+</header>
+
+<div class="tabs">
+  <button data-tab="0" class="on">菜单</button>
+  <button data-tab="1">成员</button>
+  <button data-tab="2">结算</button>
+</div>
+
+<main>
+  <!-- 菜单 -->
+  <div class="col on" data-col="0">
+    <div class="panel">
+      <div class="panel-hd">🍔 菜单<span class="hint" id="menuCount"></span></div>
+      <div class="panel-bd">
+        <div class="search-row"><input id="search" placeholder="搜汉堡 / 咖啡 / 薯饼…"></div>
+        <div class="chips" id="chips"></div>
+        <div class="scroll" id="menuList"><div class="empty">正在加载菜单…</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 成员 -->
+  <div class="col" data-col="1">
+    <div class="panel">
+      <div class="panel-hd">👥 拼单成员<span class="hint" id="whoHint">点菜单加点餐</span></div>
+      <div class="panel-bd">
+        <div class="scroll" id="members"></div>
+        <button class="add-member" id="btnAddMember" style="margin-top:10px">＋ 添加一位小伙伴</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-hd">⚙️ 结算设置</div>
+      <div class="panel-bd">
+        <div class="fld" style="margin-bottom:11px">
+          <label style="display:block;font-size:12px;color:#6B6B70;margin-bottom:5px">优惠怎么分</label>
+          <select id="mode">
+            <option value="proportional">按消费占比分摊（公平，推荐）</option>
+            <option value="initiator">优惠全归发起者</option>
+            <option value="equal">优惠平均分摊</option>
+          </select>
+        </div>
+        <div class="fld" style="margin-bottom:11px">
+          <label style="display:block;font-size:12px;color:#6B6B70;margin-bottom:5px">谁是发起者（尾差归他）</label>
+          <select id="initiator"></select>
+        </div>
+        <div class="fld">
+          <label style="display:block;font-size:12px;color:#6B6B70;margin-bottom:5px">下单时间（影响券能不能用）</label>
+          <input type="datetime-local" id="now">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 结算 -->
+  <div class="col" data-col="2">
+    <div class="panel">
+      <div class="panel-hd">💰 实时结算<span class="hint" id="settleHint"></span></div>
+      <div class="panel-bd">
+        <div class="big">
+          <div class="row1"><span class="pay" id="payable">¥0.00</span>
+            <span class="old" id="total">¥0.00</span>
+            <span class="save" id="save">省 ¥0.00</span></div>
+          <div class="sub" id="subline">还没人点餐</div>
+        </div>
+        <table><thead><tr><th>昵称</th><th class="r">原价</th><th class="r">摊优惠</th><th class="r">应付</th></tr></thead>
+          <tbody id="settleBody"><tr><td colspan="4" class="empty">—</td></tr></tbody></table>
+        <div class="btns">
+          <button class="btn primary" id="btnCopy">复制分享文案</button>
+          <button class="btn" id="btnCard">导出结算卡</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-hd">🎟️ 券包<span class="hint">点开关可手动停用</span></div>
+      <div class="panel-bd" id="coupons"><div class="empty">未加载券包</div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-hd">💡 提示</div>
+      <div class="panel-bd"><ul class="tips" id="tips"><li>—</li></ul></div>
+    </div>
+  </div>
+</main>
+
+<!-- 同步弹层 -->
+<div class="mask" id="mask">
+  <div class="modal">
+    <h3>同步真实门店数据</h3>
+    <p class="tip">Token 只存在本机内存里，用来向麦当劳 MCP 拉取菜单和券包，不会写入任何文件。<br>
+      获取：<b>open.mcd.cn/mcp</b> → 登录 → 控制台 → 激活 → 复制</p>
+    <div class="fld"><label>MCP Token</label><input id="fToken" type="password" placeholder="粘贴你的 Token"></div>
+    <div class="row">
+      <div class="fld"><label>城市</label><input id="fCity" placeholder="杭州市"></div>
+      <div class="fld"><label>门店关键词</label><input id="fKeyword" placeholder="临平"></div>
+    </div>
+    <div class="row">
+      <div class="fld"><label>门店编码（可选）</label><input id="fStore" placeholder="3330478"></div>
+      <div class="fld"><label>业务编码（可选）</label><input id="fBe" placeholder="333047802"></div>
+    </div>
+    <div class="msg" id="syncMsg"></div>
+    <div class="act">
+      <button class="btn" id="btnCancel">取消</button>
+      <button class="btn primary" id="btnDoSync">开始同步</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = s => document.querySelector(s);
+const fmt = v => '¥' + Number(v).toFixed(2);
+const state = {
+  store: null, menu: [], wallet: [], claimable: [],
+  members: [], active: 0, disabled: new Set(), category: '全部',
+  lastResult: null
+};
+
+/* ---------------- 初始化 ---------------- */
+async function boot(){
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  $('#now').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+
+  const snap = await (await fetch('/api/snapshot')).json();
+  state.store = snap.store || null;
+  state.menu = (snap.menu && snap.menu.items) || [];
+  state.wallet = (snap.coupons && snap.coupons.wallet) || [];
+  state.claimable = (snap.coupons && snap.coupons.claimable) || [];
+
+  const tag = state.store && state.store.storeName
+    ? `${state.store.storeName} · ${state.store.storeCode}`
+    : (state.store && state.store.storeCode ? `门店 ${state.store.storeCode}` : '未同步门店');
+  $('#storeTag').textContent = tag + (snap.hasLiveCoupons ? ' · 实时券包' : ' · 示例券包');
+  $('#channel').value = (state.store && state.store.channel) || 'delivery';
+
+  state.members = [{ nick: '我', budget: 0, items: [] }];
+  renderCategoryChips(); renderMenu(); renderMembers(); renderCoupons(); selectMember(0);
+  settle();
+  if (location.hash === '#demo') setTimeout(() => $('#btnDemo').click(), 120);
+}
+
+/* ---------------- 菜单 ---------------- */
+function categories(){ return ['全部', ...new Set(state.menu.map(i => i.category).filter(Boolean))]; }
+function renderCategoryChips(){
+  $('#chips').innerHTML = categories().map(c =>
+    `<button class="chip ${c===state.category?'on':''}" data-cat="${c}">${c}</button>`).join('');
+  $('#chips').querySelectorAll('.chip').forEach(b => b.onclick = () => {
+    state.category = b.dataset.cat; renderCategoryChips(); renderMenu();
+  });
+}
+function renderMenu(){
+  const kw = ($('#search').value || '').trim().toLowerCase();
+  const list = state.menu.filter(i =>
+    (state.category === '全部' || i.category === state.category) &&
+    (!kw || i.name.toLowerCase().includes(kw)));
+  $('#menuCount').textContent = `${list.length} / ${state.menu.length} 个在售`;
+  if (!list.length){
+    $('#menuList').innerHTML = `<div class="empty">没找到餐品<br>换个关键词，或先同步门店</div>`;
+    return;
+  }
+  $('#menuList').innerHTML = list.map(i => `
+    <div class="item" data-code="${i.code}">
+      <div class="nm"><b>${i.name}</b><span>${i.category || ''}${i.discountType ? ' · ' + i.discountType : ''}</span></div>
+      <div class="pr">${fmt(i.price)}${i.originalPrice > i.price ? `<s>${fmt(i.originalPrice)}</s>` : ''}</div>
+      <div class="add">＋</div>
+    </div>`).join('');
+  $('#menuList').querySelectorAll('.item').forEach(el => el.onclick = () => {
+    const it = state.menu.find(m => m.code === el.dataset.code);
+    addItem(it);
+  });
+}
+function addItem(it){
+  if (!state.members.length) addMember();
+  const m = state.members[state.active] || state.members[0];
+  const exist = m.items.find(x => x.code === it.code && !x.custom);
+  if (exist) exist.qty += 1;
+  else m.items.push({ code: it.code, name: it.name, price: it.price, qty: 1, custom: '', category: it.category });
+  renderMembers(); settle();
+  toast(`已给「${m.nick}」加：${it.name}`);
+}
+
+/* ---------------- 成员 ---------------- */
+function selectMember(i){
+  state.active = i;
+  document.querySelectorAll('.member').forEach(el => el.classList.toggle('active', +el.dataset.i === i));
+  const m = state.members[i];
+  $('#whoHint').textContent = m ? `当前：${m.nick}（点菜单加点餐）` : '点菜单加点餐';
+}
+function addMember(){
+  state.members.push({ nick: '小伙伴' + (state.members.length + 1), budget: 0, items: [] });
+  renderMembers(); selectMember(state.members.length - 1); settle();
+}
+function renderMembers(){
+  const box = $('#members');
+  if (!state.members.length){
+    box.innerHTML = `<div class="empty">还没有人拼单<br>先加一位小伙伴吧</div>`;
+    renderInitiatorOptions(); return;
+  }
+  box.innerHTML = state.members.map((m, i) => {
+    const sum = m.items.reduce((a, x) => a + x.price * x.qty, 0);
+    const lines = m.items.map((x, j) => `
+      <div class="line">
+        <div class="nm">${x.name}<small>${x.category || ''}</small></div>
+        <div class="qty"><button data-act="minus" data-i="${i}" data-j="${j}">−</button><span>${x.qty}</span>
+          <button data-act="plus" data-i="${i}" data-j="${j}">＋</button></div>
+        <div class="amt">${fmt(x.price * x.qty)}</div>
+        <button class="rm" data-act="rm" data-i="${i}" data-j="${j}">✕</button>
+        <div class="cust"><input placeholder="忌口 / 定制（不要酸黄瓜、去酱…）" value="${x.custom || ''}"
+             data-act="cust" data-i="${i}" data-j="${j}"></div>
+      </div>`).join('');
+    return `<div class="member ${i===state.active?'active':''}" data-i="${i}">
+      <div class="m-hd">
+        <input class="nick" value="${m.nick}" data-act="nick" data-i="${i}">
+        <div class="bud"><input type="number" min="0" value="${m.budget || ''}" placeholder="不填=不限" data-act="bud" data-i="${i}"></div>
+        ${state.members.length > 1 ? `<button class="del" data-act="delmember" data-i="${i}">✕</button>` : ''}
+      </div>
+      ${lines || `<div class="empty" style="padding:10px 0">还没点东西</div>`}
+      <div class="m-ft">小计 <b>${fmt(sum)}</b>${m.budget && sum > m.budget ? `<span class="warn">超预算 ${fmt(sum - m.budget)}</span>` : ''}</div>
+    </div>`;
+  }).join('');
+
+  box.querySelectorAll('[data-act]').forEach(el => {
+    const i = +el.dataset.i, j = +el.dataset.j;
+    const act = el.dataset.act;
+    if (act === 'nick') el.oninput = () => { state.members[i].nick = el.value; renderInitiatorOptions(); };
+    if (act === 'bud') el.oninput = () => { state.members[i].budget = +el.value || 0; };
+    if (act === 'minus') el.onclick = () => { const it = state.members[i].items[j];
+      it.qty <= 1 ? state.members[i].items.splice(j,1) : it.qty -= 1; renderMembers(); settle(); };
+    if (act === 'plus') el.onclick = () => { state.members[i].items[j].qty += 1; renderMembers(); settle(); };
+    if (act === 'rm') el.onclick = () => { state.members[i].items.splice(j,1); renderMembers(); settle(); };
+    if (act === 'delmember') el.onclick = () => { state.members.splice(i,1);
+      state.active = Math.min(state.active, state.members.length-1); renderMembers(); renderInitiatorOptions(); settle(); };
+    if (act === 'cust') el.oninput = () => { state.members[i].items[j].custom = el.value; };
+    if (act === 'cust') el.onblur = () => settle();
+  });
+  box.querySelectorAll('.member').forEach(el => el.onclick = e => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON') return;
+    selectMember(+el.dataset.i);
+  });
+  selectMember(state.active);
+  renderInitiatorOptions();
+}
+function renderInitiatorOptions(){
+  const sel = $('#initiator'), cur = sel.value;
+  sel.innerHTML = state.members.map(m => `<option value="${m.nick}">${m.nick}</option>`).join('');
+  if (cur && state.members.some(m => m.nick === cur)) sel.value = cur;
+}
+
+/* ---------------- 券 ---------------- */
+function renderCoupons(){
+  const box = $('#coupons');
+  if (!state.wallet.length){
+    box.innerHTML = `<div class="empty">还没加载券包<br>点右上角「同步门店」拉取真实券包</div>`;
+    return;
+  }
+  const groups = {};
+  state.wallet.forEach((c, i) => { (groups[c.title] = groups[c.title] || []).push({ c, i }); });
+  box.innerHTML = state.wallet.map((c, i) => {
+    const off = state.disabled.has(i);
+    const save = c.kind === 'price' ? `券后价 ¥${Number(c.value).toFixed(2)}` : `立减 ¥${Number(c.value).toFixed(2)}`;
+    const ch = (c.channels || []).map(x => x === 1 ? '到店' : '外送').join('/') || '通用';
+    return `<div class="cp">
+      <div class="t"><b>${c.title}</b><span>${save} · ${ch}${c.dateRange && c.dateRange[0] ? ` · ${c.dateRange[0]}~${c.dateRange[1]}` : ''}</span></div>
+      <div class="switch ${off?'':'on'}" data-cp="${i}"></div>
+    </div>`;
+  }).join('') + (state.claimable.length
+    ? `<div style="margin-top:10px;font-size:12px;color:#86868B">麦麦省可领：${state.claimable.map(c=>c.name).join('、')}</div>` : '');
+  box.querySelectorAll('[data-cp]').forEach(el => el.onclick = () => {
+    const i = +el.dataset.cp;
+    state.disabled.has(i) ? state.disabled.delete(i) : state.disabled.add(i);
+    renderCoupons(); settle();
+  });
+}
+
+/* ---------------- 结算 ---------------- */
+function buildOrder(){
+  const members = state.members
+    .filter(m => m.items.length)
+    .map(m => ({ nick: m.nick || '匿名', budget: +m.budget || 0,
+      items: m.items.map(x => ({ code: x.code, name: x.name, price: x.price,
+        qty: x.qty, custom: x.custom || '', category: x.category || '' })) }));
+  return {
+    title: '麦当劳拼单结算单',
+    storeName: state.store ? (state.store.storeName || `门店 ${state.store.storeCode}`) : '未指定门店',
+    channel: $('#channel').value,
+    mode: $('#mode').value,
+    initiator: $('#initiator').value || (members[0] && members[0].nick) || '我',
+    now: ($('#now').value || '').replace('T', ' '),
+    members,
+    coupons: state.wallet.filter((_, i) => !state.disabled.has(i))
+  };
+}
+let timer = null;
+function settle(){ clearTimeout(timer); timer = setTimeout(doSettle, 220); }
+async function doSettle(){
+  const order = buildOrder();
+  $('#settleHint').textContent = `规则：${{proportional:'按消费占比',initiator:'优惠归发起者',equal:'优惠平均分'}[order.mode]}`;
+  if (!order.members.length){
+    $('#payable').textContent = '¥0.00'; $('#total').textContent = '¥0.00';
+    $('#save').textContent = '省 ¥0.00'; $('#subline').textContent = '还没人点餐';
+    $('#settleBody').innerHTML = `<tr><td colspan="4" class="empty">—</td></tr>`;
+    $('#tips').innerHTML = '<li>先在左侧给每位小伙伴加点餐，这里会自动算账。</li>';
+    state.lastResult = null; return;
+  }
+  const res = await (await fetch('/api/settle', { method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ order }) })).json();
+  if (!res.ok){ $('#subline').textContent = res.error || '算账失败'; return; }
+  state.lastResult = res;
+  $('#payable').textContent = fmt(res.payable);
+  $('#total').textContent = fmt(res.total);
+  $('#save').textContent = '省 ' + fmt(res.discount);
+  $('#subline').textContent = `${order.storeName} · ${order.members.length} 人 · ${res.used.length} 张券生效`;
+  $('#settleBody').innerHTML = res.members.map(m => {
+    const over = +m.budget > 0 && +m.pay > +m.budget;
+    return `<tr><td>${m.nick}${over?' <span class="warn">超预算</span>':''}</td>
+      <td class="r">${fmt(m.orig)}</td><td class="r g">-${fmt(m.share)}</td>
+      <td class="r pay-cell">${fmt(m.pay)}</td></tr>`;
+  }).join('') + `<tr><td><b>合计</b></td><td class="r"><b>${fmt(res.total)}</b></td>
+      <td class="r g"><b>-${fmt(res.discount)}</b></td><td class="r pay-cell"><b>${fmt(res.payable)}</b></td></tr>`;
+  $('#tips').innerHTML = res.tips.map(t => `<li>${t}</li>`).join('')
+    || '<li>—</li>';
+}
+/* ---------------- 导出 ---------------- */
+function toast(msg){
+  const t = $('#toast'); t.textContent = msg; t.classList.add('on');
+  clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove('on'), 1600);
+}
+$('#btnCopy').onclick = async () => {
+  if (!state.lastResult){ toast('先点几样东西再复制'); return; }
+  try { await navigator.clipboard.writeText(state.lastResult.share); toast('分享文案已复制，去群里粘贴吧'); }
+  catch { window.prompt('手动复制：', state.lastResult.share); }
+};
+$('#btnCard').onclick = () => {
+  if (!state.lastResult){ toast('先点几样东西再导出'); return; }
+  const blob = new Blob([state.lastResult.card], { type:'text/html' });
+  const url = URL.createObjectURL(blob);
+  const w = window.open(url, '_blank');
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+  if (!w) toast('弹窗被拦截了');
+};
+/* ---------------- 交互 ---------------- */
+$('#search').oninput = renderMenu;
+$('#btnAddMember').onclick = addMember;
+$('#channel').onchange = settle;
+$('#mode').onchange = settle;
+$('#initiator').onchange = settle;
+$('#now').onchange = settle;
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  document.querySelectorAll('.col').forEach(c => c.classList.toggle('on', c.dataset.col === b.dataset.tab));
+});
+$('#btnSync').onclick = () => { $('#mask').classList.add('on'); $('#syncMsg').textContent = ''; };
+$('#btnDemo').onclick = async () => {
+  const res = await (await fetch('/api/demo')).json();
+  if (!res.ok){ toast('示例加载失败'); return; }
+  const o = res.order;
+  state.members = o.members.map(m => ({ nick: m.nick, budget: m.budget || 0, items: m.items.map(x => ({...x})) }));
+  state.active = 0; state.disabled.clear();
+  $('#mode').value = o.mode || 'proportional';
+  if (o.channel) $('#channel').value = o.channel;
+  if (o.now) $('#now').value = o.now.replace(' ', 'T');
+  renderMembers(); renderCoupons(); selectMember(0); settle();
+  toast('已载入 4 人示例，可直接改');
+};
+$('#btnCancel').onclick = () => $('#mask').classList.remove('on');
+$('#mask').onclick = e => { if (e.target.id === 'mask') $('#mask').classList.remove('on'); };
+$('#btnDoSync').onclick = async () => {
+  const btn = $('#btnDoSync'); btn.disabled = true; btn.textContent = '同步中…';
+  $('#syncMsg').textContent = '正在向麦当劳 MCP 拉取数据…';
+  try {
+    const body = { token: $('#fToken').value.trim(), city: $('#fCity').value.trim(),
+      keyword: $('#fKeyword').value.trim(), store: $('#fStore').value.trim(),
+      becode: $('#fBe').value.trim(), channel: $('#channel').value };
+    const res = await (await fetch('/api/sync', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(body) })).json();
+    if (!res.ok) throw new Error(res.error || '同步失败');
+    const d = res.data;
+    state.store = d.store; state.menu = d.menu.items || []; state.wallet = d.coupons.wallet || [];
+    state.claimable = d.coupons.claimable || []; state.disabled.clear();
+    $('#storeTag').textContent = `${d.store.storeName || d.store.storeCode} · ${d.store.storeCode} · 实时数据`;
+    $('#channel').value = d.store.channel || 'delivery';
+    renderCategoryChips(); renderMenu(); renderCoupons();
+    $('#mask').classList.remove('on');
+    toast(`同步完成：${state.menu.length} 个餐品 / ${state.wallet.length} 张券`);
+    settle();
+  } catch (e) {
+    $('#syncMsg').textContent = e.message;
+  } finally { btn.disabled = false; btn.textContent = '开始同步'; }
+};
+
+boot();
+</script>
+</body>
+</html>
